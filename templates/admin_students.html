@@ -1,0 +1,71 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+<div class="center">
+<div class="card wide" style="margin-top:40px;">
+
+  <div class="view-top">
+    <span class="view-title">Students</span>
+    <span class="count-badge" id="count">Loading...</span>
+  </div>
+
+  <table class="data-table" id="tbl">
+    <thead>
+      <tr>
+        <th>Roll Number</th>
+        <th>Password</th>
+        <th style="text-align:right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+</div>
+</div>
+
+<script>
+function load() {
+  fetch('/get-students').then(r=>r.json()).then(d=>{
+    document.getElementById('count').textContent = d.length + ' students';
+    document.getElementById('tbody').innerHTML = d.map(x=>`
+      <tr>
+        <td><span class="pill pill-blue">${x.roll}</span></td>
+        <td style="color:var(--t3); font-family:'JetBrains Mono',monospace; font-size:0.82rem;">${x.password}</td>
+        <td style="text-align:right;">
+           <button onclick="resetDevice('${x.roll}')" style="padding:4px 8px; font-size:0.75rem; border-radius:4px; border:none; background:#fef08a; color:#854d0e; cursor:pointer; margin-right:5px;">Reset Device</button>
+           <button onclick="changePass('${x.roll}')" style="padding:4px 8px; font-size:0.75rem; border-radius:4px; border:none; background:var(--bg-input); color:var(--t2); cursor:pointer; margin-right:5px;">Change Pass</button>
+           <button onclick="delStu('${x.roll}')" style="padding:4px 8px; font-size:0.75rem; border-radius:4px; border:none; background:#fee2e2; color:#ef4444; cursor:pointer;">Delete</button>
+        </td>
+      </tr>
+    `).join('') || '<tr><td colspan="3" style="text-align:center;padding:32px;color:var(--t4);">No students found</td></tr>';
+  });
+}
+
+function resetDevice(roll) {
+    if(confirm(`Reset device link for ${roll}? They will need to register a new device.`)) {
+        fetch('/admin/reset-device', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({roll: roll})
+        }).then(()=>alert("Device key erased."));
+    }
+}
+
+function delStu(roll) {
+  if(confirm(`Delete student ${roll} and ALL their attendance?`)) {
+    fetch('/admin/delete-student', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({roll: roll})
+    }).then(()=>load());
+  }
+}
+
+function changePass(roll) {
+  let newPass = prompt("Enter new password for " + roll + ":");
+  if(newPass) {
+    fetch('/admin/change-password', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({roll: roll, password: newPass})
+    }).then(()=>{ alert("Password updated!"); load(); });
+  }
+}
+load();
+</script>

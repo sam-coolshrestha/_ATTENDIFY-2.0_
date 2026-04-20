@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard — Attendify</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="card wide" style="margin: 40px auto; max-width: 560px;">
+
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="#fff"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+    </div>
+    <span class="brand-name">Attend<span>ify</span></span>
+  </div>
+
+  <div class="dash-top">
+    <div>
+      <p class="dash-title">Welcome, {{ session.get('user', 'Student') }}</p>
+      <p class="dash-sub">Manage your attendance and device registration</p>
+    </div>
+    <button class="btn-danger btn-sm" onclick="logout()" style="background: #fee2e2; color: #ef4444; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </button>
+  </div>
+
+  <div class="action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px;">
+
+    <div class="action-tile c1" onclick="go('/student_register')" style="cursor: pointer; padding: 20px; text-align: center; border: 1px solid var(--border); border-radius: 8px; background: #fafafa;">
+      <div class="at-ic" style="margin-bottom: 10px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <span class="at-lbl" style="font-weight: 600; font-size: 0.9rem;">Register Device</span>
+    </div>
+
+    <div class="action-tile c3" onclick="go('/student_attendance')" style="cursor: pointer; padding: 20px; text-align: center; border: 1px solid var(--border); border-radius: 8px; background: #eff6ff;">
+      <div class="at-ic" style="margin-bottom: 10px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      </div>
+      <span class="at-lbl" style="font-weight: 600; font-size: 0.9rem; color: #1d4ed8;">Mark Attendance</span>
+    </div>
+
+    <div class="action-tile c4" onclick="go('/student_view')" style="cursor: pointer; padding: 20px; text-align: center; border: 1px solid var(--border); border-radius: 8px; background: #fafafa;">
+      <div class="at-ic" style="margin-bottom: 10px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <span class="at-lbl" style="font-weight: 600; font-size: 0.9rem;">View Attendance</span>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+function go(path){ window.location.href = path; }
+
+function logout() {
+    fetch('/logout').then(() => {
+        window.location.href = '/login';
+    });
+}
+</script>
+
+</body>
+</html>

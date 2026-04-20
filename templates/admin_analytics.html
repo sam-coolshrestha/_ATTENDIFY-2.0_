@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Analytics — Attendify</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="card wide" style="margin: 40px auto; max-width: 800px;">
+  <div class="view-top" style="margin-bottom: 20px;">
+    <span class="view-title">Subject Attendance Analytics</span>
+    <button onclick="window.history.back()" style="padding:6px 12px; font-size:0.8rem; background:var(--bg-input); border:1px solid var(--border); cursor:pointer; color:var(--t2);">Back</button>
+  </div>
+
+  <p class="page-sub">Average attendance percentage across all enrolled students per subject.</p>
+
+  <div style="position: relative; height:400px; width:100%; margin-top: 30px;">
+    <canvas id="attendanceChart"></canvas>
+  </div>
+
+</div>
+
+<script>
+window.onload = async function() {
+    const res = await fetch('/admin/analytics-data');
+    const data = await res.json();
+    
+    if (data.labels.length === 0) {
+        document.getElementById('attendanceChart').outerHTML = "<p style='text-align:center; color:var(--t4); margin-top:50px;'>No attendance data available yet.</p>";
+        return;
+    }
+
+    const ctx = document.getElementById('attendanceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: 'Average Class Attendance (%)',
+                data: data.data,
+                backgroundColor: 'rgba(59, 130, 246, 0.6)', // Blue
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: { display: true, text: 'Percentage (%)' }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+};
+</script>
+
+</body>
+</html>

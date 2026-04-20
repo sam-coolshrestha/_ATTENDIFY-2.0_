@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mark Attendance — Attendify</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="card" style="margin: 40px auto;">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    </div>
+    <span class="brand-name">Mark <span>Attendance</span></span>
+  </div>
+
+  <p class="page-title">Mark Attendance</p>
+  <p class="page-sub">Enter your credentials and the 4-digit code provided by your teacher</p>
+
+  <div class="field">
+    <label class="field-label">Roll Number</label>
+    <input id="roll" value="{{ session.get('user', '') }}" readonly style="background-color: var(--bg-input); cursor: not-allowed;">
+  </div>
+  <div class="field">
+    <label class="field-label">Password</label>
+    <input id="password" type="password" placeholder="Your password">
+  </div>
+  <div class="field">
+    <label class="field-label">Subject</label>
+    <input id="subject" placeholder="e.g. Mathematics">
+  </div>
+  <div class="field">
+    <label class="field-label">Session Code</label>
+    <input id="code" placeholder="4-digit code" type="number">
+  </div>
+
+  <button id="submitBtn" onclick="mark()" style="background: var(--blue);">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    Submit Attendance
+  </button>
+  
+  <div style="text-align: center; margin-top: 15px;">
+    <p style="font-size: 0.8rem; color: var(--t4);">Do NOT leave this screen until the teacher ends the session.</p>
+  </div>
+</div>
+
+<script>
+async function mark(){
+  let deviceKey = localStorage.getItem("deviceKey");
+  if(!deviceKey){ alert("Please register your device from the dashboard first."); return; }
+
+  try {
+    await navigator.bluetooth.requestDevice({ acceptAllDevices: true });
+
+    const res = await fetch('/mark-attendance',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        roll: document.getElementById('roll').value, 
+        password: document.getElementById('password').value,
+        subject: document.getElementById('subject').value, 
+        code: document.getElementById('code').value, 
+        deviceKey
+      })
+    });
+
+    const data = await res.json();
+    
+    if(data.error) {
+        alert("❌ " + data.error);
+    } else if (data.status === "Attendance marked") {
+        alert("✅ " + data.status);
+        
+        // DEACTIVATE THE BUTTON, DO NOT REDIRECT
+        let btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.style.background = "gray";
+        btn.innerHTML = "Submitted ✓";
+    }
+    
+  } catch(e) {
+    alert("Bluetooth cancelled or unavailable.");
+  }
+}
+
+// ================= ZERO-TOLERANCE LOCKDOWN =================
+let isLocked = false;
+function triggerLockdown() {
+    if(isLocked) return;
+    isLocked = true;
+    
+    document.body.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #ffe6e6; text-align: center;">
+            <h1 style="color: red; font-size: 3rem; margin-bottom: 10px;">🚨 LOCKED 🚨</h1>
+            <h3 style="color: darkred; margin-bottom: 10px;">Attendance Forfeited</h3>
+            <p style="color: #333;">You switched apps or left the secure portal.</p>
+            <button onclick="window.location.href='/student_dashboard'" style="margin-top: 20px; padding: 10px 20px; background: red; color: white; border: none; border-radius: 5px;">Return to Dashboard</button>
+        </div>
+    `;
+
+    let currentRoll = document.getElementById('roll') ? document.getElementById('roll').value : "{{ session.get('user', '') }}";
+    if(currentRoll) {
+        fetch('/forfeit-attendance', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ roll: currentRoll })
+        });
+    }
+}
+
+window.addEventListener("blur", triggerLockdown);
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) triggerLockdown();
+});
+
+async function keepScreenAwake() {
+    try { await navigator.wakeLock.request('screen'); } 
+    catch (err) { console.log("Wake Lock failed:", err); }
+}
+keepScreenAwake();
+</script>
+
+</body>
+</html>
