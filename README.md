@@ -5,6 +5,8 @@ A Cloud-Based Student Attendance Management System
 
 Attendify is a full-stack web application designed to digitize and automate the attendance process. It eliminates the inefficiencies of manual record-keeping and provides real-time transparency for both educators and students.
 
+attendify-2-0-p2kj.onrender.com
+
 🚩 The Problem Statement
 Traditional attendance management in schools and colleges is flawed by two major issues:
 
